@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ModMetaData>
+  <name>Mod Manager - Save Loader</name>
+  <author>Fluffy</author>
+  <url>https://ludeon.com/forums/index.php?topic=16120</url>
+  <targetVersion>1.0.2059</targetVersion>
+  <description>Allows starting the game and directly loading a save game by passing a 'save=saveName' command line parameter.
+</description>
+</ModMetaData>
