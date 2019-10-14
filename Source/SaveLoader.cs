@@ -2,28 +2,27 @@
 // Copyright Karel Kroeze, 2019-2019
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using RimWorld;
-using UnityEngine;
 using Verse;
 
 namespace SaveLoader
 {
-    public class SaveLoader : Verse.Mod
+    public class SaveLoader : Mod
     {
         public SaveLoader( ModContentPack mod ) : base( mod )
         {
-            if ( GenCommandLine.TryGetCommandLineArg( "save", out string saveName ) )
+            if ( GenCommandLine.TryGetCommandLineArg( "save", out var saveName ) )
                 InitiateSaveLoading( saveName );
         }
 
         // lifted wholesale from HugsLib, with minor alterations
         public static void InitiateSaveLoading( string saveName )
         {
+            saveName = saveName.Trim( '"', '\'' );
+
+            Log.Message( "Starting saved game: " + saveName );
+
             if ( saveName == null )
             {
                 throw new WarningException( "save filename not set" );
@@ -35,16 +34,12 @@ namespace SaveLoader
                 throw new WarningException( "save file not found: " + filePath );
             }
 
-            Log.Message( "Starting saved game: " + saveName );
-            Action loadAction = () =>
+            // skip mod/version checks, we're force loading here
+            // (this also neatly hides the fact that we got weird bugs when nesting queued events)
+            LongEventHandler.QueueLongEvent( delegate
             {
-                LongEventHandler.QueueLongEvent(
-                    delegate { Current.Game = new Game {InitData = new GameInitData {gameToLoad = saveName}}; },
-                    "Play", "LoadingLongEvent", true, null );
-            };
-
-            PreLoadUtility.CheckVersionAndLoad( filePath, ScribeMetaHeaderUtility.ScribeHeaderMode.Map, loadAction );
+                Current.Game = new Game {InitData = new GameInitData {gameToLoad = saveName}};
+            }, "Play", "LoadingLongEvent", true, (err) => Log.Error( err.ToString() ) );
         }
-
     }
 }
